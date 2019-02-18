@@ -1,4 +1,4 @@
-Program exmaple;
+Program example;
 var
 	a: integer;
 begin
