@@ -7,6 +7,8 @@ begin
     s := 'Yes, I am gonna be a      star! Aha-aha!';
     s := s + ', world!';
 
+        { comment }
+
 	iteration:
 	if a > 5 then
 		goto out
