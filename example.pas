@@ -1,21 +1,8 @@
 Program example;
-function factorial(n: integer): integer;
-procedure abss;
-begin
-    writeln();
-end;
-var
-    a: integer;
-begin
-  if n>1 then
-    factorial:=n*factorial(n-1)
-  else
-    factorial:=1;
-    end;
 var
 	a, b: integer;
     abc: array [1..10+(1),5..6] of integer;
-    abc1: array [1 .. 3] of integer;
+    abc1: array [1 .. 3] of integer; 
     ccc: array ['a' .. 'b'] of integer;
     c: real;
     s, d: string;
@@ -50,6 +37,21 @@ end.
 
 
 {function factorial(n: integer): integer;
+var
+    a: integer;
+begin
+  if n>1 then
+    factorial:=n*factorial(n-1)
+  else
+    factorial:=1;
+    end;
+    
+    
+    function factorial(n: integer): integer;
+procedure abss;
+begin
+    writeln();
+end;
 var
     a: integer;
 begin
