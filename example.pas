@@ -1,9 +1,8 @@
 Program example;
 var
 	a, b: integer;
-    abc: array [1..10+(1),5..6] of integer;
+    abc: array [1..10,5..6] of integer;
     abc1: array [1 .. 3] of integer; 
-    ccc: array ['a' .. 'b'] of integer;
     c: real;
     s, d: string;
 label iteration, out;
