@@ -27,13 +27,13 @@ lableStack = []
 
 def to_rpn(line):
     flagAEM = flagF = flagBegin = flagVar = flagConst = flagProc = flagLocal = flagFunc = flag_arr_dcl = flagBeginLoop = flagLable  = False
-    dcl3 = tempIf = procCounter = arrDcl = 1
+    tempAEM = dcl3 = tempIf = procCounter = arrDcl = 1
     flagIf = flagFor = flagWhile = 0
     work_line = line.split(' ')
     global out_line, tempState, stack
     for index, word in enumerate(work_line):
         # out_line += ' $$' + str(dcl3) + '$$ '
-        print('Pre-stack:', stack, 'ind', index, word, '\n')
+        print('Pre-stack:', stack, 'ind', index, word)
         if word[0] == "I" or word[0] == "C" or word[0] == 'M':
             if flagLable:
                 lableStack.append(word)
@@ -60,10 +60,6 @@ def to_rpn(line):
                 out_line += stack.pop() + ' '
                 flagWhile = 0
                 flagBeginLoop = False
-            if flagProc:
-                out_line += str(procCounter) + ' ' + 'НП '
-                stack.pop()
-                flagProc = False
             elif flagVar:
                 # out_line += ' $$' + str(dcl3) + '$$ '
                 if dcl3 > 1:
@@ -105,7 +101,7 @@ def to_rpn(line):
         elif word == 'W9' or word == 'W10':
             # if word == 'W9':  # Procedure
             flagProc = True
-            stack.append('W9')
+            # stack.append('W9')
             procCounter += 1
         # Встречаем условие
         elif word == 'W14':
@@ -121,15 +117,17 @@ def to_rpn(line):
             flagIf = 'W16'
             while not stack[len(stack) - 1] == 'W14':
                 out_line += stack.pop() + ' '
+
             if stack:
                 stack.pop()
             tempIf += 1
             out_line += 'M' + str(tempIf) + ' БП ' + 'M' + str(tempIf - 1) + ' R3 '
         elif word == 'W17':
-            if flagIf == 'W16' or flagIf =='W15':
-                while not stack[len(stack) - 1] == 'W14':
+            if flagIf == 'W16' or flagIf == 'W15':
+                while stack and not stack[len(stack) - 1] == 'W14':
                     out_line += stack.pop() + ' '
-                stack.pop()
+                if stack:
+                    stack.pop()
                 out_line += 'M' + str(tempIf) + ' R3 '
             if flagFor == 2:
                 while stack and not stack[len(stack) - 1] == 'КЦД':
@@ -217,6 +215,7 @@ def to_rpn(line):
                     out_line += stack.pop() + ' '
                 out_line += str(tempAEM) + ' ' + stack.pop() + ' '
                 flagAEM = False
+                tempAEM = 2
         elif word == 'W8':
             while not stack[len(stack) - 1] == 'ARDCL':
                 out_line += stack.pop() + ' '
@@ -225,6 +224,8 @@ def to_rpn(line):
             flag_arr_dcl = False
             arrDcl = 1
         elif word == 'W11' or word == 'W2' or word == 'W6':
+            if flagProc:
+                flagProc = False
             if flagFor or flagWhile:
                 flagBeginLoop = True
             if flagVar:
@@ -272,8 +273,11 @@ def to_rpn(line):
         # Если приоритет операции ниже, чем крайней операции в стеке, то он просто проталкивается в стек
         elif priority.get(word) > priority.get(stack[len(stack) - 1], 0):
             stack.append(word)
-            if (flagFor or flagWhile) and (word == 'O0' or word == 'O1' or word == 'O2' or word == 'O3'):
-                tempLoopCounter += 1
+            if (flagFor or flagWhile or flagAEM) and (word == 'O0' or word == 'O1' or word == 'O2' or word == 'O3'):
+                if flagAEM:
+                    tempAEM += 1
+                else:
+                    tempLoopCounter += 1
         # Если приоритет операции выше, чем крайней операции в стеке, то выталкиваются все операторы до тех пор,
         # пока не встретится оператор с таким же или выше приоритетом
         elif priority.get(word) <= priority.get(stack[len(stack) - 1], 0):
@@ -283,6 +287,8 @@ def to_rpn(line):
             if (flagFor or flagWhile) and (word == 'O0' or word == 'O1' or word == 'O2' or word == 'O3'):
                 tempLoopCounter += 1
         tempState = word
+        print('out:', out_line)
+        print('post-stack:', stack, '\n', procCounter, flagAEM, flagF, flagBegin, flagVar, flagConst, flagProc, flagLocal, flagFunc, flag_arr_dcl, flagBeginLoop, flagLable, '\n')
     # Дописываются оставшиеся в стэке операторы
     while stack:
         out_line += stack.pop() + ' '
@@ -293,7 +299,9 @@ def to_normal(line):
     global normal_line
     line = line.split(' ')
     for word in line:
-        if word[0] == 'I' or word[0]=='C':
+        if word[0] == 'I' or word[0] == 'C' or word[0] == 'M' or word == 'КЦД' or word == 'НЦД' or word == 'КЦП' or word == 'НЦП' or word == 'АЭМ' or word == 'КЦД' or word == 'УПЛ':
+            normal_line += word
+        if word == 'ARDCL':
             normal_line += word
         if str(word).isnumeric():
             normal_line += word
@@ -395,13 +403,37 @@ def to_normal(line):
     print(normal_line)
 
 
+#
+#
+# Не считает АЕМ если сложение в первом индексе
+#
+#
+
+
+# to_rpn(
+#     'W1 I1 R1 I2 R3 W3 R4 I3 R3 W7 R7 C0 R2 C1 R1 C2 R2 C3 R8 W8 W3 R4 I4 R3 W7 R7 C0 '
+#     'R2 C4 R8 W8 W3 R4 I5 R3 W4 R4 I6 R1 I7 R3 W5 R4 W6 I8 R1 I9 R4 W9 I10 R5 W1 I11 R3 W3 R6 W11 I11 W12 C10 O0 C11 R4'
+#     ' W17 W11 W19 I1 W12 C0 O0 C5 W20 C1 W22 I1 W12 C2 O2 '
+#     'C3 R4 I2 W12 C4 O1 C5 R4 I2 W12 R5 C6 O0 C7 R6 R4 I6 W12 I6 O0 C8 R4 I5 W12 C9 R4 I7 W12 C6 R4 I3 R7 C10 O1 C5 O1 '
+#     'C0 R1 C2 R8 W12 C2 O0 C3 R4 I8 R3 '
+#     'W14 R5 I1 O6 C2 O0 C0 R6 W15 W13 I9 W16 I1 W12 I1 O0 C0 R4 I2 W12 O1 C0 O2 C0 O1 C5 R4 I6 W12 C11 O0 C12 R4 W13 '
+#     'I8 R4 I5 W12 C13 R4 I9 R3 W18')
+
+
+print()
+
 to_normal(to_rpn(
     'W1 I1 R1 I2 R3 W3 R4 I3 R3 W7 R7 C0 R2 C1 R1 C2 R2 C3 R8 W8 W3 R4 I4 R3 W7 R7 C0 '
-    'R2 C4 R8 W8 W3 R4 I5 R3 W4 R4 I6 R1 I7 R3 W5 R4 W6 I8 R1 I9 R4 W11 W19 I1 W12 C0 O0 C5 W20 C1 W22 I1 W12 C2 O2 '
-    'C3 R4 I2 W12 C4 O1 C5 R4 I1 W12 C5 R4 W12 R5 '
-    'C6 O0 C7 R6 R4 I6 W12 I6 O0 C8 R4 I5 W12 C9 R4 I7 W12 C6 R4 I3 R7 C10 O0 C5 O1 C0 R1 C2 R8 W12 C2 O0 C3 R4 I8 R3 '
-    'W14 R5 I1 O6 C2 O0 C0 R6 W15 W13 I9 W16 I1 W12 I1 O0 C0 R4 I2 W12 O1 C0 O2 C0 O1 C5 R4 I6 W12 C11 O0 C12 R4 W13 '
-    'I8 R4 I5 W12 C13 R4 I9 R3 W18'))
+    'R2 C4 R8 W8 W3 R4 I5 R3 W4 R4 I6 R1 I7 R3 W5 R4 W6 I8 R1 I9 R4 W9 I10 R5 W1 I11 R3 W3 R6 W1 I15 R3 W3 R4 W11 I11'
+    ' W12 C10 O0 C11 R4 '
+    'W17 W11 W19 I1 W12 C0 O0 C5 W20 C1 W22 I1 W12 C2 O2 '
+    'C3 R4 I2 W12 C4 O1 C5 R4 I2 W12 R5 C6 O0 C7 R6 R4 I6 W12 I6 O0 C8 R4 I5 W12 C9 R4 I7 W12 C6 R4 I3 R7 C10 O1 C5 O1 '
+    'C0 R1 C2 R8 W12 C2 O0 C3 R4 I8 R3 '
+    'W14 R5 I1 O6 C2 O0 C0 R6 W15 W13 I9 W16 I1 W12 I1 O0 C0 R4 I2 W12 C0 O2 C0 O1 C5 R4 I6 W12 C11 O0 C12 R4 '
+    'I9 R3 W18'))
+
+
+
 
 # I1 I2 W3 I3 C0 C1 C2 C3 5 ARDCL W3 I4 C0 C4 3 ARDCL W3 I5 W4 I6 I7 W5 1 КО I8 I9 W6 I1 C5 W12 C6 C7 O0 W12 I6 I6 C8
 # O0 W12 I5 C9 W12 I7 C6 W12 I3 C10 C5 O0 C0 O1 C2 3 АЭМ C2 C3 O0 W12 I8 R3 I1 C2 C0 O0 O6 M1 УПЛ I9 W13 M2 БП M1 R3 I1
