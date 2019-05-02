@@ -292,7 +292,7 @@ def to_rpn(line):
     # Дописываются оставшиеся в стэке операторы
     while stack:
         out_line += stack.pop() + ' '
-    print(out_line)
+    print(out_line, '\n')
     return out_line
 
 def to_normal(line):
@@ -400,7 +400,7 @@ def to_normal(line):
         if word == 'R10':
             normal_line += '}'
         normal_line += ' '
-    print(normal_line)
+    print(normal_line, '\n')
 
 
 #
@@ -423,14 +423,7 @@ def to_normal(line):
 print()
 
 to_normal(to_rpn(
-    'W1 I1 R1 I2 R3 W3 R4 I3 R3 W7 R7 C0 R2 C1 R1 C2 R2 C3 R8 W8 W3 R4 I4 R3 W7 R7 C0 '
-    'R2 C4 R8 W8 W3 R4 I5 R3 W4 R4 I6 R1 I7 R3 W5 R4 W6 I8 R1 I9 R4 W9 I10 R5 W1 I11 R3 W3 R6 W1 I15 R3 W3 R4 W11 I11'
-    ' W12 C10 O0 C11 R4 '
-    'W17 W11 W19 I1 W12 C0 O0 C5 W20 C1 W22 I1 W12 C2 O2 '
-    'C3 R4 I2 W12 C4 O1 C5 R4 I2 W12 R5 C6 O0 C7 R6 R4 I6 W12 I6 O0 C8 R4 I5 W12 C9 R4 I7 W12 C6 R4 I3 R7 C10 O1 C5 O1 '
-    'C0 R1 C2 R8 W12 C2 O0 C3 R4 I8 R3 '
-    'W14 R5 I1 O6 C2 O0 C0 R6 W15 W13 I9 W16 I1 W12 I1 O0 C0 R4 I2 W12 C0 O2 C0 O1 C5 R4 I6 W12 C11 O0 C12 R4 '
-    'I9 R3 W18'))
+    'W1 I0 R3 W3 R4 I1 R1 I2 R3 W4 R4 I3 R3 W5 R4 I4 R3 W7 R7 C0 R2 C1 R8 W8 W3 R4 W11 I4 W12 C2 O0 C0 R4 I0 W12 C4 R4 I1 W12 I0 O3 I4 O0 C5 R4 W14 I4 O6 I0 W15 I1 W12 C2 W16 I1 W12 C7 R4 W18'))
 
 
 
