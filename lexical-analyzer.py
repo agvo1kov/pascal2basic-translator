@@ -659,7 +659,7 @@ def to_token_analyze(file_name):
 constants = []
 identifiers = []    
 
-token_chain = to_token_analyze('./pas/program.pas')
+token_chain = to_token_analyze('./pas/procedure.pas')
 
 data = {
             'chain': tokens_chain,
